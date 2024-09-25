@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { DetallesService } from './detalles.service';
 import { CreateDetalleDto } from './dto/create-detalle.dto';
 import { UpdateDetalleDto } from './dto/update-detalle.dto';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('detalles')
 export class DetallesController {
   constructor(private readonly detallesService: DetallesService) {}
 
-  @Post()
-  create(@Body() createDetalleDto: CreateDetalleDto) {
+  @MessagePattern({cmd: 'create-detalle'})
+  create(@Payload() createDetalleDto: CreateDetalleDto) {
     return this.detallesService.create(createDetalleDto);
   }
 
-  @Get()
+  @MessagePattern({cmd: 'find-all-detalles'})
   findAll() {
     return this.detallesService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @MessagePattern({cmd: 'find-one-detalle'})
+  findOne(@Payload('id',ParseIntPipe) id: string) {
     return this.detallesService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDetalleDto: UpdateDetalleDto) {
-    return this.detallesService.update(+id, updateDetalleDto);
+  @MessagePattern({cmd: 'update-detalle'})
+  update(@Payload() updateDetalleDto: UpdateDetalleDto) {
+    return this.detallesService.update(updateDetalleDto.id, updateDetalleDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @MessagePattern({cmd: 'remove-detalle'})
+  remove(@Payload('id',ParseIntPipe) id: string) {
     return this.detallesService.remove(+id);
   }
 }
